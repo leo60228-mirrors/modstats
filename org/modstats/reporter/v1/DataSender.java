@@ -65,8 +65,8 @@ import cpw.mods.fml.common.FMLLog;
 
 class DataSender extends Thread
 {
-    private static final String urlAutoTemplate = "http://modstats.org/api/v1/report?mc=%s&user=%s&data=%s&sign=%s";
-    private static final String urlManualTemplate = "http://modstats.org/api/v1/check?mc=%s&user=%s&data=%s&sign=%s";
+    private static final String urlAutoTemplate = "http://modstats.org/api/v1/report?mc=%s&user=%s&data=%s&sign=%s&beta=%b&strict=%b";
+    private static final String urlManualTemplate = "http://modstats.org/api/v1/check?mc=%s&user=%s&data=%s&sign=%s&beta=%b&strict=%b";
     
     private final Reporter reporter;
     public final boolean manual;
@@ -245,7 +245,7 @@ class DataSender extends Thread
             String hash = getSignature(playerId+"!"+data);
             String template = manual?urlManualTemplate:urlAutoTemplate;
             String mcVersion = new CallableMinecraftVersion(null).minecraftVersion();
-            URL url = new URL(String.format(template, mcVersion, playerId, data, hash));
+            URL url = new URL(String.format(template, mcVersion, playerId, data, hash, reporter.config.betaNotifications, reporter.config.forCurrentMinecraftVersion));
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setConnectTimeout(5000);
             connection.setReadTimeout(5000);

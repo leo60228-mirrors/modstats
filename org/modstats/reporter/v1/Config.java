@@ -40,6 +40,7 @@ public class Config
     
     public boolean allowUpdates;
     public boolean betaNotifications;
+    public boolean forCurrentMinecraftVersion;
     
     public Config()
     {
@@ -48,12 +49,16 @@ public class Config
         configuration.load();
         
         Property prop = configuration.get("updates", "AllowUpdates", true);
-        prop.comment = "Allow to send current mod versions to the server and check for updates";
+        prop.comment = "Allow to send current mod versions to the server and check for updates.\nIt allows to mod authors to see mod's popularity. Please don't disable it without necessity";
         allowUpdates = prop.getBoolean(true);
         
         prop = configuration.get("updates", "BetaNotifications", false);
         prop.comment = "Set true to receive notifications about beta versions. Otherwise you will only receive information about stable versions";
         betaNotifications = prop.getBoolean(false);
+        
+        prop = configuration.get("updates", "ForCurrentMinecraftVersion", false);
+        prop.comment = "Check for updates only for current MC version.\nEx:if you have MC 1.4.2 and ForCurrentMinecraftVersion is true, then you wouldn't receive notifications about versions for MC 1.4.5";
+        forCurrentMinecraftVersion = prop.getBoolean(false);
         
         configuration.save();
         
