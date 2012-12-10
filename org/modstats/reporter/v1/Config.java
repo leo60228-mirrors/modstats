@@ -62,7 +62,7 @@ public class Config
         
         configuration.save();
         
-        FMLLog.info("[Modstats] Config loaded. allowUpdates: %b,  betaNotification: %b", allowUpdates, betaNotifications);
+        FMLLog.info("[Modstats] Config loaded. allowUpdates: %b,  betaNotification: %b, strict: %b", allowUpdates, betaNotifications, forCurrentMinecraftVersion);
     }
 
 }

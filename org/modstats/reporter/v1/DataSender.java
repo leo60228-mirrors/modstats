@@ -156,6 +156,12 @@ class DataSender extends Thread
         try
         {
             JsonRootNode json = (new JdomParser()).parse(response);
+            //empty result
+            if(!json.isNode("mods"))
+            {
+                FMLLog.info("[Modstats] Empty result");
+                return;
+            }
             List<JsonNode> modList = json.getArrayNode("mods");
             ModsUpdateEvent event = new ModsUpdateEvent();
             for (JsonNode modObject : modList)
@@ -224,7 +230,22 @@ class DataSender extends Thread
                 FMLLog.info("[Modstats] %s", builder.toString());
                 if(FMLCommonHandler.instance().getSide().isClient())
                 {
-                    FMLClientHandler.instance().getClient().thePlayer.addChatMessage(builder.toString());
+                    Minecraft mc = FMLClientHandler.instance().getClient();
+                    int maxTries = 20;
+                    while(mc.thePlayer==null && maxTries>0)
+                    {
+                        try
+                        {
+                            sleep(1000);
+                        } catch (InterruptedException e)
+                        {
+                        }
+                        maxTries--;
+                    }
+                    if(mc.thePlayer != null)
+                    {
+                        mc.thePlayer.addChatMessage(builder.toString());
+                    }
                 }
             }
                 

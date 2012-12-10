@@ -79,7 +79,7 @@ public class Reporter implements IModstatsReporter
         if(currentSender!=null && (currentSender.manual == false || manual))
             return;
         currentSender = new DataSender(this, manual);
-        currentSender.run();
+        currentSender.start();
         sender = currentSender;
         
     }
