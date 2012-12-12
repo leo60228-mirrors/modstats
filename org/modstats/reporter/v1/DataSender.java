@@ -228,10 +228,10 @@ class DataSender extends Thread
                         .append(iterator.hasNext()?",":".");
                 }
                 FMLLog.info("[Modstats] %s", builder.toString());
-                if(FMLCommonHandler.instance().getSide().isClient())
+                if(!reporter.config.logOnly && FMLCommonHandler.instance().getSide().isClient())
                 {
                     Minecraft mc = FMLClientHandler.instance().getClient();
-                    int maxTries = 20;
+                    int maxTries = 30;
                     while(mc.thePlayer==null && maxTries>0)
                     {
                         try

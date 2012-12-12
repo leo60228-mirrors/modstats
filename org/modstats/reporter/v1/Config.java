@@ -41,6 +41,7 @@ public class Config
     public boolean allowUpdates;
     public boolean betaNotifications;
     public boolean forCurrentMinecraftVersion;
+    public boolean logOnly;
     
     public Config()
     {
@@ -51,6 +52,10 @@ public class Config
         Property prop = configuration.get("updates", "AllowUpdates", true);
         prop.comment = "Allow to send current mod versions to the server and check for updates.\nIt allows to mod authors to see mod's popularity. Please don't disable it without necessity";
         allowUpdates = prop.getBoolean(true);
+        
+        prop = configuration.get("updates", "LogOnly", false);
+        prop.comment = "Don't display chat message, just add message to the log.";
+        logOnly = prop.getBoolean(false);
         
         prop = configuration.get("updates", "BetaNotifications", false);
         prop.comment = "Set true to receive notifications about beta versions. Otherwise you will only receive information about stable versions";
