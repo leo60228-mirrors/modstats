@@ -41,6 +41,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.src.CallableMinecraftVersion;
@@ -147,7 +149,39 @@ class DataSender extends Thread
     
     private boolean checkIsNewer(String current, String received)
     {
-        return true;
+        Pattern mask = Pattern.compile("^\\D*([\\d\\.]+)(.*)$");
+        Matcher matcher = mask.matcher(current);
+        if(!matcher.matches())
+        {
+            return true;
+        }
+        String curDigits = matcher.group(1);
+        String curLetters = matcher.group(2);
+        matcher = mask.matcher(received);
+        if(!matcher.matches())
+        {
+            return true;
+        }
+        String recDigits = matcher.group(1);
+        String recLetters = matcher.group(2);
+        
+        String[] vals1 = curDigits.split("\\.");
+        String[] vals2 = recDigits.split("\\.");
+        int i=0;
+        while(i<vals1.length && i<vals2.length && vals1[i].equals(vals2[i])) 
+        {
+          i++;
+        }
+        if (i<vals1.length && i<vals2.length) 
+        {
+            int diff = new Integer(vals2[i]).compareTo(new Integer(vals1[i]));
+            return diff>0;
+        }
+        if(vals1.length == vals2.length)
+        {
+            return recLetters.compareTo(curLetters)>0;
+        }
+        return vals2.length>vals1.length;
     }
     
     
@@ -173,7 +207,7 @@ class DataSender extends Thread
                     continue;
                 }
                 String version = modObject.getStringValue("ver");
-                if(version.equals(reporter.registeredMods.get(prefix)))
+                if(version==null || version.equals(reporter.registeredMods.get(prefix).version))
                 {
                     continue;
                 }
