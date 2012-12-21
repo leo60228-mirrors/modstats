@@ -43,7 +43,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.src.CallableMinecraftVersion;
+import net.minecraft.crash.CallableMinecraftVersion;
 import net.minecraftforge.common.MinecraftForge;
 
 import org.modstats.ModVersionData;
