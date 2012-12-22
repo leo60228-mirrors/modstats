@@ -107,18 +107,32 @@ public class Reporter implements IModstatsReporter
             FMLLog.warning("[Modstats] ModstatsInfo annotation not found for given mod.");
             return;
         }
-        Mod modData = mod.getClass().getAnnotation(Mod.class);
-        if(modData == null)
-        {
-            FMLLog.warning("[Modstats] Mod annotation not found. Only FML mods are supported.");
-            return;
-        }
+        
         if(info.prefix() == null || info.prefix().equals(""))
         {
             FMLLog.warning("[Modstats] Mod prefix can't be empty.");
             return;
         }
-        ModVersionData data = new ModVersionData(info.prefix(), modData.name(), modData.version());
+        Mod modData = mod.getClass().getAnnotation(Mod.class);
+        ModVersionData data;
+        if(modData == null)
+        {
+            if(info.name() == null || info.name().equals(""))
+            {
+                FMLLog.warning("[Modstats] Mod name can't be empty.");
+                return;
+            }
+            if(info.version() == null || info.version().equals(""))
+            {
+                FMLLog.warning("[Modstats] Mod version can't be empty.");
+                return;
+            }
+            data = new ModVersionData(info.prefix(), info.name(), info.version());
+        }
+        else
+        {
+            data = new ModVersionData(info.prefix(), modData.name(), modData.version());
+        }
         registeredMods.put(info.prefix(), data);
     }
 
