@@ -1,5 +1,5 @@
 /**
- * Copyright (c) <2012>, Oleg Romanovskiy <shedarhome@gmail.com> aka Shedar
+ * Copyright (c) <2012-2014>, Oleg Romanovskiy <shedarhome@gmail.com> aka Shedar
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -25,14 +25,14 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.modstats.reporter.v1;
+package org.modstats.reporter.v2;
 
-import java.io.File;
-
-import net.minecraftforge.common.Configuration;
-import net.minecraftforge.common.Property;
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.Loader;
+import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.common.config.Property;
+
+import java.io.File;
 
 public class Config
 {

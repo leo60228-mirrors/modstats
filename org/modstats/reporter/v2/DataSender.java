@@ -1,5 +1,5 @@
 /**
- * Copyright (c) <2012>, Oleg Romanovskiy <shedarhome@gmail.com> aka Shedar
+ * Copyright (c) <2012-2014>, Oleg Romanovskiy <shedarhome@gmail.com> aka Shedar
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -25,44 +25,25 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.modstats.reporter.v1;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.NetworkInterface;
-import java.net.URL;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
-import net.minecraft.client.Minecraft;
-import net.minecraft.crash.CallableMinecraftVersion;
-import net.minecraftforge.common.MinecraftForge;
-
-import org.modstats.ModVersionData;
-import org.modstats.ModsUpdateEvent;
-
-import argo.jdom.JdomParser;
-import argo.jdom.JsonNode;
-import argo.jdom.JsonRootNode;
-import argo.jdom.JsonStringNode;
-import argo.saj.InvalidSyntaxException;
+package org.modstats.reporter.v2;
 
 import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
 import com.google.common.io.Files;
-
+import com.google.gson.*;
 import cpw.mods.fml.client.FMLClientHandler;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.versioning.ComparableVersion;
+import net.minecraft.client.Minecraft;
+import net.minecraft.util.ChatComponentText;
+import net.minecraftforge.common.MinecraftForge;
+import org.modstats.ModVersionData;
+import org.modstats.ModsUpdateEvent;
+
+import java.io.*;
+import java.net.*;
+import java.util.*;
 
 class DataSender extends Thread
 {
@@ -92,7 +73,7 @@ class DataSender extends Thread
     
     private String getPlayerId() throws IOException
     {
-        File statDir =  new File(FMLClientHandler.instance().getClient().mcDataDir, "stats");
+        File statDir =  new File(Minecraft.getMinecraft().mcDataDir, "stats");
         if(!statDir.exists())
         {
             statDir.mkdirs();
@@ -156,24 +137,35 @@ class DataSender extends Thread
     {
         try
         {
-            JsonRootNode json = (new JdomParser()).parse(response);
+            // JsonRootNode json = (new JdomParser()).parse(response);
+            JsonObject json = new JsonParser().parse(response).getAsJsonObject();
+
             //empty result
-            if(!json.isNode("mods"))
+            JsonArray modList = json.getAsJsonArray("mods");
+
+            // if(!json.isNode("mods"))
+            if(modList==null || modList.size()==0)
             {
                 FMLLog.info("[Modstats] Empty result");
                 return;
             }
-            List<JsonNode> modList = json.getArrayNode("mods");
+
+            // List<JsonNode> modList = json.getArrayNode("mods");
             ModsUpdateEvent event = new ModsUpdateEvent();
-            for (JsonNode modObject : modList)
+            // for (JsonNode modObject : modList)
+            for (JsonElement modObjectEl : modList)
             {
-                String prefix = modObject.getStringValue("code");
+                JsonObject modObject = modObjectEl.getAsJsonObject();
+
+                // String prefix = modObject.getStringValue("code");
+                String prefix = modObject.get("code").getAsString();
                 if(!reporter.registeredMods.containsKey(prefix))
                 {
                     FMLLog.warning("[Modstats] Extra mod '%s' in service response", prefix);
                     continue;
                 }
-                String version = modObject.getStringValue("ver");
+                // String version = modObject.getStringValue("ver");
+                String version = modObject.get("ver").getAsString();
                 if(version==null || version.equals(reporter.registeredMods.get(prefix).version))
                 {
                     continue;
@@ -181,18 +173,24 @@ class DataSender extends Thread
                 if(checkIsNewer(reporter.registeredMods.get(prefix).version, version))
                 {
                     ModVersionData data = new ModVersionData(prefix, reporter.registeredMods.get(prefix).name, version);
-                    Map<JsonStringNode, JsonNode> fields = modObject.getFields();
-                    for (Map.Entry<JsonStringNode, JsonNode> entry : fields.entrySet())
+                    // Map<JsonStringNode, JsonNode> fields = modObject.getFields();
+                    Set<Map.Entry<String, JsonElement>> fields = modObject.entrySet();
+
+                    //for (Map.Entry<JsonStringNode, JsonNode> entry : fields.entrySet())
+                    for (Map.Entry<String, JsonElement> entry : fields)
                     {
-                        String fieldName = entry.getKey().getText();
+                        // String fieldName = entry.getKey().getText();
+                        String fieldName = entry.getKey();
                         if(fieldName.equals("code") || fieldName.equals("ver"))
                             continue;
-                        if(!(entry.getValue() instanceof JsonStringNode))
+                        // if(!(entry.getValue() instanceof JsonElement))
+                        if((entry.getValue().isJsonObject()))
                         {
                             FMLLog.warning(String.format("[Modstats] Too complex data in response for field '%s'.", fieldName)); 
                             continue;
                         }
-                        String value = ((JsonStringNode)entry.getValue()).getText();
+                        // String value = ((JsonStringNode)entry.getValue()).getText();
+                        String value = entry.getValue().getAsString();
                         if(fieldName.equals("chlog"))
                         {
                             data.changeLogUrl = value;
@@ -245,12 +243,13 @@ class DataSender extends Thread
                     }
                     if(mc.thePlayer != null)
                     {
-                        mc.thePlayer.addChatMessage(builder.toString());
+                        mc.thePlayer.addChatMessage(new ChatComponentText(builder.toString()));
                     }
                 }
             }
                 
-        } catch (InvalidSyntaxException e)
+        // } catch (InvalidSyntaxException e)
+        } catch (JsonSyntaxException e)
         {
             FMLLog.warning("[Modstats] Can't parse response: '%s'.", e.getMessage());
         }
@@ -266,7 +265,7 @@ class DataSender extends Thread
             String playerId = getPlayerId();
             String hash = getSignature(playerId+"!"+data);
             String template = manual?urlManualTemplate:urlAutoTemplate;
-            String mcVersion = new CallableMinecraftVersion(null).minecraftVersion();
+            String mcVersion = FMLCommonHandler.instance().getModName();
             URL url = new URL(String.format(template, mcVersion, playerId, data, hash, reporter.config.betaNotifications, reporter.config.forCurrentMinecraftVersion));
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setConnectTimeout(5000);

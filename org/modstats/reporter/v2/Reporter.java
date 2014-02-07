@@ -1,5 +1,5 @@
 /**
- * Copyright (c) <2012>, Oleg Romanovskiy <shedarhome@gmail.com> aka Shedar
+ * Copyright (c) <2012-2014>, Oleg Romanovskiy <shedarhome@gmail.com> aka Shedar
  * All rights reserved.
  * 
  * Redistribution and use in source and binary forms, with or without
@@ -25,22 +25,20 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.modstats.reporter.v1;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.ForgeSubscribe;
-import net.minecraftforge.event.world.WorldEvent;
-
-import org.modstats.IModstatsReporter;
-import org.modstats.ModVersionData;
-import org.modstats.ModstatInfo;
+package org.modstats.reporter.v2;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.Mod;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.world.WorldEvent;
+import org.modstats.IModstatsReporter;
+import org.modstats.ModVersionData;
+import org.modstats.ModstatInfo;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class Reporter implements IModstatsReporter
@@ -84,7 +82,7 @@ public class Reporter implements IModstatsReporter
         
     }
     
-    @ForgeSubscribe
+    @SubscribeEvent
     public void worldLoad(WorldEvent.Load event)
     {
         startCheck(false);
